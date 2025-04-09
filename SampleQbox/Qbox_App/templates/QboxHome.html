@@ -1,0 +1,73 @@
+{% load static %}
+<h2>Welcome, {{ user.username }}!</h2>
+<p>
+    <a href="{% url 'addquestion' %}"> Add Question</a>
+</p>
+
+{% for q in all_questions %}
+<div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 10px;">
+
+
+    <p><strong>{{ q.user.username }}:</strong> posted on <em>{{ q.created_at }}</em></p>
+
+
+    <h3>{{ q.content }}</h3>
+
+
+    <p><a href="{% url 'add_answer' q.id %}">Answer this Question</a></p>
+
+
+    <h4>Answers:</h4>
+    <ul>
+        {% for a in q.answers.all %}
+        <div style="background-color: #eeecec; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <li style="list-style: none;">
+                <p style="font-size: 16px; color: #333; margin-bottom: 8px;">{{ a.content }}</p>
+                <small style="display: block; font-size: 12px; color: #777; margin-bottom: 10px;">
+                    {{ a.user.username }} at {{ a.created_at }}
+                </small>
+                <button class="like-btn" data-answer-id="{{ a.id }}" style="border: none; background: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    {% if a.id in user_liked_answer_ids %}
+                        <img src="{% static 'like.png' %}" width="20" height="20" alt="Like" id="like-icon-{{ a.id }}">
+                    {% else %}
+                        <img src="{% static 'unlike_icon.png' %}" width="20" height="20" alt="Unlike" id="like-icon-{{ a.id }}">
+                    {% endif %}
+                    <span id="like-count-{{ a.id }}" style="font-size: 14px; color: #444;">{{ a.likes.count }}</span>
+                </button>
+            </li>
+        </div>
+
+        {% empty %}
+        <li>No answers yet.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endfor %}
+
+<p><a href="{% url 'logout' %}">Logout</a></p>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const csrfToken = '{{ csrf_token }}';
+        document.querySelectorAll('.like-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const answerId = this.dataset.answerId;
+                fetch(`/like-answer/${answerId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const icon = document.getElementById(`like-icon-${answerId}`);
+                        const count = document.getElementById(`like-count-${answerId}`);
+                        icon.src = data.liked ? "{% static 'like.png' %}" : "{% static 'unlike_icon.png' %}";
+                        count.innerText = data.like_count;
+                    });
+            });
+        });
+    });
+</script>

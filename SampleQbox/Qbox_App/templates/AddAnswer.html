@@ -1,0 +1,7 @@
+<h2>
+    Answer the question {{ question.content }}</h2>
+<form method="post">
+    {% csrf_token %} {{ form.as_p }}
+    <button type="submit"> Submit ur Answer</button>
+</form>
+<p><a href="{% url 'QboxHome' %}">Back to Qbox</a></p>
