@@ -71,7 +71,7 @@ def AddQuestionsView(request):
             return redirect('QboxHome')
     return render(request, 'Add_Question.html', {'form': form})
 
-
+@login_required(login_url='login')
 def AddAnswerView(request, question_id):
     question = get_object_or_404(Questions, id=question_id)
     form = AddAnswersForm(request.POST or None)
@@ -84,7 +84,7 @@ def AddAnswerView(request, question_id):
             return redirect('QboxHome')
     return render(request, 'AddAnswer.html', {'form': form, 'question': question})
 
-
+@login_required(login_url='login')
 def Like_Answers(request, answer_id):
     answer = get_object_or_404(Answers, id=answer_id)
     like, created = Likes.objects.get_or_create(
